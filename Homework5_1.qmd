@@ -1,0 +1,174 @@
+---
+title: "Homework 5: Submission 1"
+subtitle: "Research Methods, Spring 2024"
+author: Leila Mulveny
+format:
+  pdf:
+    output-file: "mulveny-l-hwk5-1"
+    output-ext:  "pdf"
+    header-includes:
+      - \usepackage{float}
+      - \floatplacement{table}{H}
+      - \usepackage{hyperref}
+abstract: |
+  \href{https://github.com/LMULVEN/Homework5}{Homework 5: Repository} 
+---
+
+```{r}
+#| include: false
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(tidyverse, ggplot2, dplyr, lubridate, readr, readxl, hrbrthemes, fixest,
+               scales, gganimate, gapminder, gifski, png, tufte, plotly, OECD,
+               ggrepel, survey, foreign, devtools, pdftools, kableExtra, modelsummary)
+```
+
+```{r}
+#| include: false
+#| eval: true
+load("Hw5_workspace.Rdata")
+```
+
+
+\newpage 
+
+\vspace{.2in}
+\noindent 1. Plot the share of the adult population with direct purchase health insurance over time. <br>
+
+```{r}
+#| echo: false
+#| label: directpurchase
+#| fig-cap: Direct Purchase Over Time
+
+question1
+```
+
+
+\newpage 
+
+\vspace{.2in}
+\noindent 2. Discuss the reduction in direct purchase health insurance in later years. Can you list a couple of policies that might have affected the success of the direct purchase insurance market? <br>
+
+The decline in direct purchase health insurance post-2016 may be attributed to several factors. One significant policy change was the repeal of the individual mandate under the Affordable Care Act (ACA) in 2017. This mandate required most Americans to have health insurance or face a tax penalty. Its removal eliminated a financial incentive for healthy individuals to purchase insurance. Market instability and uncertainty following 2016, including regulatory changes, ACA debates, and fluctuating premiums, also contributed to fewer people opting for direct purchase plans.
+
+\newpage 
+
+\vspace{.2in}
+\noindent 3. Plot the share of the adult population with Medicaid over time. <br>
+
+```{r}
+#| echo: false
+#| label: Medicaid
+
+question3
+```
+
+
+\newpage 
+
+\vspace{.2in}
+\noindent 4. Plot the share of uninsured over time, separately by states that expanded Medicaid in 2014 versus those that did not. Drop all states that expanded after 2014. <br>
+
+```{r}
+#| echo: false
+#| label: Medicaid2014
+
+question4
+```
+
+\newpage 
+
+\vspace{.2in}
+\noindent 5. Calculate the average percent of uninsured individuals in 2012 and 2015, separately for expansion and non-expansion states. Present your results in a basic 2x2 DD table. <br>
+Drop DC and Puerto Rico 
+```{r} 
+#| echo: false
+#| warning: false
+#| label: uninsured20122015
+#| tbl-cap: "Uninsured in 2012 and 2015"
+
+options(knitr.kable.NA = 0)
+knitr::kable(avg_did, 
+             col.names=c("expand_ever", "avg_diff_uninsured"),
+             format.args=list(big.mark=","), booktabs = TRUE) %>%
+             kable_styling(latex_options=c("scale_down"))
+
+```
+
+\newpage 
+
+\vspace{.2in}
+\noindent 6. Estimate the effect of Medicaid expansion on the uninsurance rate using a standard DD regression estimator, again focusing only on states that expanded in 2014 versus those that never expanded. <br>
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: DID
+#| tbl-cap: Effect of Medicaid Expansion on Uninsurance
+
+modelsummary(dd.ins.reg)
+
+```
+
+\newpage 
+
+\vspace{.2in}
+\noindent 7. Include state and year fixed effects in your estimates. Try using the lfe or fixest package to estimate this instead of directly including the fixed effects. <br>
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: DIDFE
+
+modelsummary(list("DID" = m.dd7, "TWFE" = m.twfe7))
+```
+
+
+\newpage 
+
+\vspace{.2in}
+\noindent 8. Repeat the analysis in question 7 but include all states (even those that expanded after 2014). Are your results different? If so, why? <br>
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: DIDFEALL
+
+modelsummary(list("DID" = m.dd8, "TWFE" = m.twfe8))
+```
+
+The analysis including all states, regardless of expansion timing, yielded similar results to question 7 but with a slight difference. The coefficient for state expansion (expand_everTRUE) decreased slightly from approximately -0.046 to -0.040, indicating a potential attenuation of the effect of state expansion on the outcome variable. This attenuation could be due to the inclusion of states with varied policy implementations or timing, which may have diluted the estimated effect compared to only considering states that expanded before 2014.
+
+
+\newpage 
+
+\vspace{.2in}
+\noindent 9. Provide an “event study” graph showing the effects of Medicaid expansion in each year. Use the specification that includes state and year fixed effects, limited to states that expanded in 2014 or never expanded. <br>
+
+```{r}
+#| echo: false
+#| label: question9
+#| fig-cap: Event Study
+
+iplot(mod.twfe9, 
+                   xlab = 'Time to treatment',
+                   main = 'Event study')
+```
+
+
+\newpage 
+
+\vspace{.2in}
+\noindent 10. Repeat part 9 but again include states that expanded after 2014. Note: this is tricky…you need to put all states onto “event time” to create this graph. <br>
+
+
+```{r}
+#| echo: false
+#| label: question10
+#| fig-cap: Effect of Expansion with Event Time
+
+iplot(mod.twfe10, 
+                     xlab = 'Time to treatment',
+                     main = 'Event study')
+```
